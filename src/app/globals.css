@@ -1,9 +1,9 @@
 :root {
   color-scheme: dark;
-  --primary: #d7ff2f;
+  --primary: #d4ff3f;
   --primary-dark: #a8d900;
   --on-primary: #12110f;
-  --primary-soft: rgba(215, 255, 47, 0.16);
+  --primary-soft: rgba(212, 255, 63, 0.16);
   --accent-pink: #ff3d8e;
   --accent-orange: #ffb84d;
   --success: #26d66f;
@@ -153,7 +153,7 @@ input {
   justify-content: center;
   background: var(--primary);
   color: var(--on-primary);
-  box-shadow: 0 12px 34px rgba(215, 255, 47, 0.18);
+  box-shadow: 0 12px 34px rgba(212, 255, 63, 0.18);
 }
 
 .secondary-button,
@@ -405,7 +405,7 @@ input {
 .growth-card {
   margin-top: 18px;
   background: var(--primary-soft);
-  border: 1px solid rgba(215, 255, 47, 0.24);
+  border: 1px solid rgba(212, 255, 63, 0.24);
   padding: 16px;
 }
 
@@ -579,7 +579,7 @@ input {
 
 .receipt-shell.paid {
   background:
-    linear-gradient(135deg, rgba(215, 255, 47, 0.15), transparent 45%),
+    linear-gradient(135deg, rgba(212, 255, 63, 0.15), transparent 45%),
     var(--paper);
   color: var(--paper-ink);
 }
@@ -636,6 +636,50 @@ input {
   gap: 12px;
 }
 
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: min(100%, 980px);
+  margin: 0 auto;
+  padding: 18px 20px 0;
+}
+
+.nav-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font-family: var(--font-space-grotesk), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.nav-brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #12110f;
+  border-radius: 0;
+  padding: 5px;
+  flex: 0 0 auto;
+}
+
+.site-footer .nav-brand {
+  font-size: 0.95rem;
+  letter-spacing: -0.03em;
+  text-transform: none;
+  color: var(--ink);
+  gap: 8px;
+}
+
+.site-footer .nav-brand-mark {
+  padding: 4px;
+  border-radius: 0;
+}
+
 .site-footer {
   display: flex;
   flex-wrap: wrap;
@@ -648,6 +692,15 @@ input {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-60);
+}
+
+.site-footer .nav-brand {
+  font-family: var(--font-ibm-plex-mono), monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-60);
+  font-weight: 700;
 }
 
 .site-footer strong {

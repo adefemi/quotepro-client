@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { IBM_Plex_Mono, Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { BrandMark } from "@/components/brand-mark";
 import { MonitoringBootstrap } from "@/components/monitoring-bootstrap";
 import { BRAND_OWNER } from "@/lib/brand";
 import { Providers } from "./providers";
@@ -40,9 +41,22 @@ export default function RootLayout({
       <body>
         <Providers>
           <MonitoringBootstrap />
+          <header className="site-header" data-print-hide="true">
+            <div className="nav-brand">
+              <span className="nav-brand-mark">
+                <BrandMark size={20} title="QuotePro" />
+              </span>
+              <span>QuotePro</span>
+            </div>
+          </header>
           {children}
           <footer className="site-footer" data-print-hide="true">
-            <span>QuotePro</span>
+            <span className="nav-brand">
+              <span className="nav-brand-mark">
+                <BrandMark size={16} />
+              </span>
+              <span>QuotePro</span>
+            </span>
             <span aria-hidden="true">·</span>
             <span>
               Powered by <strong>{BRAND_OWNER}</strong>
