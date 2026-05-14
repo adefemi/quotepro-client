@@ -10,6 +10,7 @@ import { z } from "zod";
 import { formatNaira } from "@/lib/format";
 import { captureClientError, trackClientEvent } from "@/lib/monitoring";
 import { type QuoteBundle } from "@/lib/quote-data";
+import type { PaymentPurpose } from "@/lib/contracts";
 
 const payQuoteSchema = z.object({
   email: z.string().email(),
@@ -76,7 +77,15 @@ async function verifyPayment(input: { publicSlug: string; reference: string }) {
   }
 }
 
-export function PayQuoteForm({ bundle }: { bundle: QuoteBundle }) {
+export function PayQuoteForm({
+  bundle,
+  purpose,
+  amount,
+}: {
+  bundle: QuoteBundle;
+  purpose: PaymentPurpose;
+  amount: number;
+}) {
   const router = useRouter();
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [isVerifyingPayment, setIsVerifyingPayment] = useState(false);
@@ -104,6 +113,7 @@ export function PayQuoteForm({ bundle }: { bundle: QuoteBundle }) {
           email: values.email,
           channel: values.channel,
           publicSlug: bundle.quote.publicSlug,
+          purpose,
         }),
       });
 
@@ -119,6 +129,7 @@ export function PayQuoteForm({ bundle }: { bundle: QuoteBundle }) {
       trackClientEvent("payment_initialized", {
         quoteId: bundle.quote.id,
         mode: result.mode,
+        purpose,
       });
 
       if (result.mode === "mock") {
@@ -144,13 +155,14 @@ export function PayQuoteForm({ bundle }: { bundle: QuoteBundle }) {
       void openPaystackPopup({
         key: result.publicKey,
         email: values.email,
-        amount: bundle.quote.depositAmount * 100,
+        amount: amount * 100,
         currency: "NGN",
         channels: [channelMap[values.channel]],
         reference: result.reference,
         metadata: {
           quoteId: bundle.quote.id,
           publicSlug: bundle.quote.publicSlug,
+          purpose,
         },
         onCancel: () => {
           setIsOpeningCheckout(false);
@@ -203,9 +215,9 @@ export function PayQuoteForm({ bundle }: { bundle: QuoteBundle }) {
           <div className="brand-avatar">T</div>
           <div>
             <span>Paying {bundle.provider.businessName}</span>
-            <strong>Deposit · {bundle.quote.id}</strong>
+            <strong>{purpose === "balance" ? "Balance" : "Deposit"} · {bundle.quote.id}</strong>
           </div>
-          <strong>{formatNaira(bundle.quote.depositAmount)}</strong>
+          <strong>{formatNaira(amount)}</strong>
         </div>
       </div>
 
@@ -247,7 +259,7 @@ export function PayQuoteForm({ bundle }: { bundle: QuoteBundle }) {
             ? "Loading secure checkout..."
             : initializePayment.isPending
               ? "Starting payment..."
-              : `Pay ${formatNaira(bundle.quote.depositAmount)} →`}
+              : `Pay ${formatNaira(amount)} →`}
       </button>
 
       {initializePayment.isError || checkoutError ? (
@@ -270,7 +282,7 @@ export function PayQuoteForm({ bundle }: { bundle: QuoteBundle }) {
             </p>
             <p className="checkout-loader-subtitle">
               {isVerifyingPayment
-                ? "Hang tight while we mark your deposit as paid."
+                ? `Hang tight while we mark your ${purpose === "balance" ? "balance" : "deposit"} as paid.`
                 : "Paystack is opening a secure window. This usually takes a second."}
             </p>
           </div>

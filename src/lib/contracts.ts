@@ -1,5 +1,6 @@
 export type QuoteStatus = "draft" | "sent" | "viewed" | "accepted" | "partial" | "paid" | "expired";
 export type PaymentStatus = "pending" | "initialized" | "paid" | "failed";
+export type PaymentPurpose = "deposit" | "balance";
 
 export interface ProviderProfileRecord {
   id: string;
@@ -42,7 +43,17 @@ export interface QuoteRecord {
 export interface QuoteEventRecord {
   id: string;
   quoteId: string;
-  kind: "drafted" | "sent" | "viewed" | "accepted" | "deposit_paid" | "payment_failed" | "paid_out";
+  kind:
+    | "drafted"
+    | "sent"
+    | "viewed"
+    | "accepted"
+    | "deposit_paid"
+    | "balance_paid"
+    | "payment_failed"
+    | "paid_out"
+    | "revision_requested"
+    | "review_received";
   label: string;
   at: string;
 }
@@ -53,12 +64,23 @@ export interface PaymentRecord {
   amount: number;
   reference: string;
   status: PaymentStatus;
+  purpose: PaymentPurpose;
+}
+
+export interface QuoteClientFeedbackRecord {
+  id: string;
+  quoteId: string;
+  type: "revision_request" | "review";
+  message: string;
+  rating?: number;
+  createdAt: string;
 }
 
 export interface QuoteBundleRecord {
   quote: QuoteRecord;
   provider: ProviderProfileRecord;
   timeline: QuoteEventRecord[];
+  feedback: QuoteClientFeedbackRecord[];
 }
 
 export interface DashboardSummaryRecord {

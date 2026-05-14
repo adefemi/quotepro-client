@@ -75,7 +75,9 @@ a {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
@@ -346,6 +348,33 @@ input {
   font-size: 1.65rem;
 }
 
+.payment-breakdown {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: -4px 0 18px;
+}
+
+.payment-breakdown div {
+  border: 1px solid rgba(18, 17, 15, 0.18);
+  border-radius: 4px;
+  padding: 12px;
+}
+
+.payment-breakdown span {
+  display: block;
+  color: var(--paper-muted);
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.payment-breakdown strong {
+  display: block;
+  color: var(--paper-ink);
+  margin-top: 4px;
+}
+
 .section-title {
   font-family: var(--font-ibm-plex-mono), monospace;
   font-size: 0.72rem;
@@ -407,6 +436,16 @@ input {
   background: var(--primary-soft);
   border: 1px solid rgba(212, 255, 63, 0.24);
   padding: 16px;
+}
+
+.feedback-card {
+  margin-top: 14px;
+  padding: 18px;
+}
+
+.feedback-form {
+  display: grid;
+  gap: 12px;
 }
 
 .sticky-action {
@@ -536,7 +575,9 @@ input {
   text-transform: uppercase;
 }
 
-.field input {
+.field input,
+.field select,
+.field textarea {
   height: 54px;
   border-radius: 7px;
   border: 1px solid var(--line);
@@ -545,9 +586,20 @@ input {
   padding: 0 16px;
 }
 
+.field textarea {
+  min-height: 112px;
+  padding: 14px 16px;
+  resize: vertical;
+}
+
 .field small,
 .error-copy {
   color: var(--danger);
+}
+
+.success-copy {
+  color: var(--success);
+  font-size: 0.82rem;
 }
 
 .channel-list {

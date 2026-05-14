@@ -29,6 +29,7 @@ const bundle: QuoteBundle = {
   quote: demoQuote,
   provider: demoProvider,
   timeline: demoTimeline,
+  feedback: [],
 };
 
 vi.mock("next/navigation", () => ({
@@ -65,7 +66,7 @@ describe("PayQuoteForm", () => {
 
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <PayQuoteForm bundle={bundle} />
+        <PayQuoteForm bundle={bundle} purpose="deposit" amount={demoQuote.depositAmount} />
       </QueryClientProvider>,
     );
 
@@ -81,6 +82,7 @@ describe("PayQuoteForm", () => {
             email: "buyer@example.com",
             channel: "card",
             publicSlug: demoQuote.publicSlug,
+            purpose: "deposit",
           }),
         }),
       );
@@ -98,6 +100,7 @@ describe("PayQuoteForm", () => {
           metadata: expect.objectContaining({
             quoteId: demoQuote.id,
             publicSlug: demoQuote.publicSlug,
+            purpose: "deposit",
           }),
         }),
       );
@@ -140,7 +143,7 @@ describe("PayQuoteForm", () => {
 
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <PayQuoteForm bundle={bundle} />
+        <PayQuoteForm bundle={bundle} purpose="deposit" amount={demoQuote.depositAmount} />
       </QueryClientProvider>,
     );
 
@@ -159,6 +162,53 @@ describe("PayQuoteForm", () => {
         }),
       );
       expect(push).toHaveBeenCalledWith("/q/A3XF-2041/receipt?reference=mock_q-2041");
+    });
+  });
+
+  it("initializes a balance payment with the outstanding amount", async () => {
+    const balanceAmount = demoQuote.totalAmount - demoQuote.depositAmount;
+    newTransaction.mockImplementation((options) => {
+      options.onCancel?.();
+    });
+    const fetchSpy = vi.spyOn(global, "fetch").mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          authorizationUrl: "https://checkout.paystack.com/abc",
+          reference: "ref_balance",
+          publicKey: "pk_test_live",
+          mode: "live",
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      ),
+    );
+
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <PayQuoteForm bundle={bundle} purpose="balance" amount={balanceAmount} />
+      </QueryClientProvider>,
+    );
+
+    await userEvent.type(screen.getByLabelText(/Email address/i), "buyer@example.com");
+    fireEvent.click(screen.getByText(/Pay ₦178,612/i));
+
+    await waitFor(() => {
+      expect(fetchSpy).toHaveBeenCalledWith(
+        "/api/paystack/initialize",
+        expect.objectContaining({
+          body: JSON.stringify({
+            email: "buyer@example.com",
+            channel: "card",
+            publicSlug: demoQuote.publicSlug,
+            purpose: "balance",
+          }),
+        }),
+      );
+      expect(newTransaction).toHaveBeenCalledWith(
+        expect.objectContaining({
+          amount: balanceAmount * 100,
+          metadata: expect.objectContaining({ purpose: "balance" }),
+        }),
+      );
     });
   });
 
@@ -181,7 +231,7 @@ describe("PayQuoteForm", () => {
 
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <PayQuoteForm bundle={bundle} />
+        <PayQuoteForm bundle={bundle} purpose="deposit" amount={demoQuote.depositAmount} />
       </QueryClientProvider>,
     );
 
@@ -228,7 +278,7 @@ describe("PayQuoteForm", () => {
 
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <PayQuoteForm bundle={bundle} />
+        <PayQuoteForm bundle={bundle} purpose="deposit" amount={demoQuote.depositAmount} />
       </QueryClientProvider>,
     );
 
@@ -265,7 +315,7 @@ describe("PayQuoteForm", () => {
 
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <PayQuoteForm bundle={bundle} />
+        <PayQuoteForm bundle={bundle} purpose="deposit" amount={demoQuote.depositAmount} />
       </QueryClientProvider>,
     );
 

@@ -3,15 +3,22 @@ import Link from "next/link";
 import type { PaymentRecord } from "@/lib/contracts";
 import { type QuoteBundle } from "@/lib/quote-data";
 import { formatNaira, formatQuoteDate } from "@/lib/format";
+import { QuoteReviewForm, RevisionRequestForm } from "@/components/quote-feedback-forms";
+import { QuoteViewTracker } from "@/components/quote-view-tracker";
 import { ReceiptActions } from "@/components/receipt-actions";
 
 export function PublicQuoteView({ bundle }: { bundle: QuoteBundle }) {
   const { provider, quote } = bundle;
+  const outstandingBalance = Math.max(quote.totalAmount - quote.depositAmount, 0);
   const canPayDeposit =
     quote.collectDeposit && quote.depositAmount > 0 && !["partial", "paid", "expired"].includes(quote.status);
+  const canPayBalance = quote.status === "partial" && outstandingBalance > 0;
+  const canRequestRevision = !["paid", "expired"].includes(quote.status);
+  const canLeaveReview = quote.status === "paid";
 
   return (
     <div className="quote-shell">
+      <QuoteViewTracker quoteId={quote.publicSlug} />
       <div className="browser-bar">
         <span>quotepro.app/q/{quote.publicSlug}</span>
       </div>
@@ -50,6 +57,17 @@ export function PublicQuoteView({ bundle }: { bundle: QuoteBundle }) {
           </div>
         </div>
 
+        <div className="payment-breakdown">
+          <div>
+            <span>Deposit paid</span>
+            <strong>{quote.status === "partial" || quote.status === "paid" ? formatNaira(quote.depositAmount) : "Pending"}</strong>
+          </div>
+          <div>
+            <span>Outstanding balance</span>
+            <strong>{quote.status === "paid" ? formatNaira(0) : formatNaira(outstandingBalance)}</strong>
+          </div>
+        </div>
+
         <div className="section-title">What&apos;s included</div>
         <ul className="line-item-list">
           {quote.items.map((item) => (
@@ -69,6 +87,18 @@ export function PublicQuoteView({ bundle }: { bundle: QuoteBundle }) {
         </div>
       </section>
 
+      {canRequestRevision ? (
+        <section className="quote-card feedback-card">
+          <RevisionRequestForm quoteId={quote.publicSlug} />
+        </section>
+      ) : null}
+
+      {canLeaveReview ? (
+        <section className="quote-card feedback-card">
+          <QuoteReviewForm quoteId={quote.publicSlug} />
+        </section>
+      ) : null}
+
       {canPayDeposit ? (
         <div className="sticky-action">
           <Link className="primary-button" href={`/q/${quote.publicSlug}/pay`}>
@@ -76,18 +106,29 @@ export function PublicQuoteView({ bundle }: { bundle: QuoteBundle }) {
           </Link>
           <p>Secured by Paystack · Card, transfer, USSD</p>
         </div>
+      ) : canPayBalance ? (
+        <div className="sticky-action">
+          <Link className="primary-button" href={`/q/${quote.publicSlug}/pay?purpose=balance`}>
+            Pay balance {formatNaira(outstandingBalance)} →
+          </Link>
+          <p>Complete payment securely with Paystack.</p>
+        </div>
       ) : (
         <div className="sticky-action">
           <span className="primary-button" aria-disabled="true">
-            {quote.status === "partial" || quote.status === "paid"
-              ? "Deposit received"
+            {quote.status === "paid"
+              ? "Fully paid"
+              : quote.status === "partial"
+                ? "Deposit received"
               : quote.status === "expired"
                 ? "Quote expired"
                 : "No deposit required"}
           </span>
           <p>
-            {quote.status === "partial" || quote.status === "paid"
-              ? "This quote already has a confirmed deposit."
+            {quote.status === "paid"
+              ? "This quote is fully paid."
+              : quote.status === "partial"
+                ? "This quote has a confirmed deposit."
               : "Review the quote and confirm next steps with the provider."}
           </p>
         </div>
@@ -116,11 +157,11 @@ export function ReceiptView({
           : "We could not verify this payment.";
     const body =
       payment?.status === "failed"
-        ? "Please retry the deposit payment or contact the provider if money left your account."
+        ? "Please retry the payment or contact the provider if money left your account."
         : isPolling
-          ? "We're checking Paystack automatically. This page will update as soon as the deposit is confirmed."
+          ? "We're checking Paystack automatically. This page will update as soon as the payment is confirmed."
         : payment
-          ? "Paystack has not confirmed this deposit yet. Refresh this page in a moment."
+          ? "Paystack has not confirmed this payment yet. Refresh this page in a moment."
           : "Use the receipt link returned by Paystack after a successful payment.";
 
     return (
@@ -153,13 +194,15 @@ export function ReceiptView({
     );
   }
 
+  const isBalancePayment = payment.purpose === "balance";
+
   return (
     <div className="receipt-shell paid">
       <div className="success-badge">✓</div>
-      <h1>Deposit paid. Job is on.</h1>
+      <h1>{isBalancePayment ? "Balance paid. Quote complete." : "Deposit paid. Job is on."}</h1>
       <p>
-        We&apos;ve notified {bundle.provider.businessName}. They can now confirm the next
-        available start date.
+        We&apos;ve notified {bundle.provider.businessName}.{" "}
+        {isBalancePayment ? "They can now close out the job." : "They can now confirm the next available start date."}
       </p>
       <dl className="receipt-grid">
         <div>

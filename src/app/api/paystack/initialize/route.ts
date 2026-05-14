@@ -9,6 +9,7 @@ export async function POST(request: Request) {
       email: string;
       channel: "card" | "bank_transfer" | "ussd";
       publicSlug: string;
+      purpose?: "deposit" | "balance";
     };
 
     const response = await fetch(`${getApiBaseUrl()}/payments/initialize`, {

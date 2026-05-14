@@ -6,10 +6,15 @@ import { PaymentStatusMonitor } from "./payment-status-monitor";
 import { PublicQuoteView, ReceiptView } from "./client-pages";
 import type { QuoteBundle } from "@/lib/quote-data";
 
+vi.mock("@/components/quote-view-tracker", () => ({
+  QuoteViewTracker: () => null,
+}));
+
 const bundle: QuoteBundle = {
   quote: demoQuote,
   provider: demoProvider,
   timeline: demoTimeline,
+  feedback: [],
 };
 
 afterEach(() => {
@@ -27,6 +32,7 @@ describe("ReceiptView", () => {
           amount: demoQuote.depositAmount,
           reference: "mock_q-2041",
           status: "paid",
+          purpose: "deposit",
         }}
         reference="mock_q-2041"
       />,
@@ -53,6 +59,7 @@ describe("ReceiptView", () => {
           amount: demoQuote.depositAmount,
           reference: "ref_poll",
           status: "paid",
+          purpose: "deposit",
         }),
         {
           status: 200,
@@ -70,6 +77,7 @@ describe("ReceiptView", () => {
           amount: demoQuote.depositAmount,
           reference: "ref_poll",
           status: "initialized",
+          purpose: "deposit",
         }}
         reference="ref_poll"
       />,
@@ -112,5 +120,25 @@ describe("PublicQuoteView", () => {
 
     expect(screen.getByText("No deposit required")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Accept & pay deposit/i })).not.toBeInTheDocument();
+  });
+
+  it("shows the balance payment CTA after a deposit has been paid", () => {
+    render(
+      <PublicQuoteView
+        bundle={{
+          ...bundle,
+          quote: {
+            ...bundle.quote,
+            status: "partial",
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByRole("link", { name: /Pay balance/i })).toHaveAttribute(
+      "href",
+      "/q/A3XF-2041/pay?purpose=balance",
+    );
+    expect(screen.getByText("Outstanding balance")).toBeInTheDocument();
   });
 });
