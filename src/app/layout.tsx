@@ -6,6 +6,8 @@ import { MonitoringBootstrap } from "@/components/monitoring-bootstrap";
 import { BRAND_OWNER } from "@/lib/brand";
 import { Providers } from "./providers";
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
@@ -24,8 +26,34 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(appUrl),
   title: "QuotePro",
   description: "Quote-to-cash over WhatsApp.",
+  icons: {
+    icon: "/quotepro-icon.svg",
+    shortcut: "/quotepro-icon.svg",
+    apple: "/quotepro-icon.svg",
+  },
+  openGraph: {
+    title: "QuotePro",
+    description: "Quote-to-cash over WhatsApp.",
+    siteName: "QuotePro",
+    images: [
+      {
+        url: "/quotepro-og.svg",
+        width: 1200,
+        height: 630,
+        alt: "QuotePro",
+      },
+    ],
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "QuotePro",
+    description: "Quote-to-cash over WhatsApp.",
+    images: ["/quotepro-og.svg"],
+  },
 };
 
 export default function RootLayout({
